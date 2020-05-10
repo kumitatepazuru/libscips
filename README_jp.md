@@ -1,7 +1,7 @@
 # libscips
 ### lib soccer communicate in python system 
 
-###### Click [here](https://github.com/kumitatepazuru/libscips/README_jp.md) for the English page.
+###### Click [here](https://github.com/kumitatepazuru/libscips/blob/master/README.md) for the English page.
 
 robocup 2d soccerシュミレーションリーグでのサーバーとの通信ができるプログラムです。
 
