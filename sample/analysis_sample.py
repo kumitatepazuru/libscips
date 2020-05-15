@@ -1,12 +1,12 @@
 import threading
 import time
 
-import libscips.signal
+import libscips.player
 import sys
 
 
 def th(name, goalie):
-    sig = libscips.signal.player_signal(send_log=False, recieve_log=False,
+    sig = libscips.player.player_signal(send_log=False, recieve_log=False,
                                         analysis_log=("hear", "unknown", "init", "error"))
     r = sig.send_init(name, log=True, goalie=goalie)
     if sig.msg_analysis(r)["type"] == "error":
