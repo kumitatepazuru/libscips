@@ -22,7 +22,7 @@ class player_signal:
         self.analysis_log = analysis_log
         self.no = ""
         self.player_port = 0
-        self.error = {"no more player or goalie or illegal client version": 0}
+        self.error = {"no more player or goalie or illegal client version": 0,"unknown command": 1}
 
     def __del__(self):
         self.s.close()
@@ -77,9 +77,20 @@ class player_signal:
                           self.no != "") + "\t\033[0m\033[38;5;10mGet msg.\t\033[38;5;9mPORT \033[4m" + str(
                 self.recieve_port) + "\033[0m\033[38;5;9m ← \033[4m" +
                   str(address[1]) + "\033[0m\t\033[38;5;6mIP \033[4m" + address[0] + "\033[0m")
-        return json.loads(msg[:-1].decode("utf-8").replace("  ", " ").replace("(", '["').replace(")", '"]').
-                          replace(" ", '","').replace('"[', "[").replace(']"', "]").replace("][", "],[").
-                          replace('""', '"')), address
+        try:
+            return json.loads(msg[:-1].decode("utf-8").replace("  ", " ").replace("(", '["').replace(")", '"]').
+                              replace(" ", '","').replace('"[', "[").replace(']"', "]").replace("][", "],[").
+                              replace('""', '"')), address
+        except json.decoder.JSONDecodeError:
+            try:
+                return json.loads(msg[:-1].decode("utf-8").replace("  ", " ").replace("(", "['").replace(")", "']").
+                           replace(" ", "','").replace("'[", "[").replace("]'", "]").replace("][", "],[").
+                           replace("''", "'")), address
+            except json.decoder.JSONDecodeError:
+                return ["error", "A message that libscips cannot parse. Special characters (parentheses, "
+                                 "double quotes, single quotes, etc.)\nA problematic message:" + msg[:-1].decode(
+                    "utf-8")
+                        ], address
 
     def msg_analysis(self, text, log_show=None):
         text = text[0]
@@ -88,7 +99,7 @@ class player_signal:
             log = "\033[38;5;1m[ERR]" + (
                     "\033[38;5;13mno \033[4m" + self.no + "\033[0m ") * (
                           self.no != "") + "\t\033[4m" + text + "\033[0m"
-            r = {"type": "error", "value": str(self.error.get(text) + (self.error.get(text) is None))}
+            r = {"type": "error", "value": str(self.error.get(text)) + str(self.error.get(text) is None)}
         elif text[0] == "init":
             self.no = text[2]
             log = "\033[38;5;10m[OK]" + (
