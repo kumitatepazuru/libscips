@@ -1,7 +1,7 @@
 # libscips
 ### lib soccer communicate in python system 
 
-###### 日本語ページは[こちら](https://github.com/kumitatepazuru/libscips/README_jp.md)
+###### 日本語ページは[こちら](https://github.com/kumitatepazuru/libscips/blob/master/README_jp.md)
 
 ##### This is made using machine translation. Please note that the translation is not sufficient.
 
