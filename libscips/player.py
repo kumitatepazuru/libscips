@@ -1,5 +1,18 @@
-import json
 from socket import socket, AF_INET, SOCK_DGRAM
+from sexpdata import Symbol, loads
+
+
+def func(text):
+    if type(text) == Symbol:
+        return text.value()
+    elif type(text) == list:
+        return tostring(text)
+    else:
+        return str(text)
+
+
+def tostring(text):
+    return list(map(func,text))
 
 
 class player_signal:
@@ -77,19 +90,7 @@ class player_signal:
                           self.no != "") + "\t\033[0m\033[38;5;10mGet msg.\t\033[38;5;9mPORT \033[4m" + str(
                 self.recieve_port) + "\033[0m\033[38;5;9m ← \033[4m" +
                   str(address[1]) + "\033[0m\t\033[38;5;6mIP \033[4m" + address[0] + "\033[0m")
-        try:
-            return json.loads(msg[:-1].decode("utf-8").replace("  ", " ").replace("(", '["').replace(")", '"]').
-                              replace(" ", '","').replace('"[', "[").replace(']"', "]").replace("][", "],[").
-                              replace('""', '"')), address
-        except json.decoder.JSONDecodeError:
-            try:
-                return json.loads(msg[:-1].decode("utf-8").replace("  ", " ").replace("(", "['").replace(")", "']").
-                                  replace(" ", "','").replace("'[", "[").replace("]'", "]").replace("][", "],[").
-                                  replace("''", "'")), address
-            except json.decoder.JSONDecodeError:
-                return ["error", "A message that libscips cannot parse. Special characters (parentheses, "
-                                 "double quotes, single quotes, etc.)\nA problematic message:" +
-                        msg[:-1].decode("utf-8")], address
+        return tostring(loads(msg[:-1].decode("utf-8"))), address
 
     def msg_analysis(self, text, log_show=None):
         text = text[0]
