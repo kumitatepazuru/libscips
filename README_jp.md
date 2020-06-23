@@ -9,5 +9,5 @@ robocup 2d soccerシュミレーションリーグでのサーバーとの通信
 agent2dをベースにしているチームなら使っているC++で動作するlibrcscのpython版と考えてください。
 
 wikiはこちらです。
-https://kumitatepazuru.github.io/libscips/jp/index.html
+https://kumitatewiki.hatenablog.com/archive/category/libscips%20jp
 
