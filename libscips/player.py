@@ -12,12 +12,12 @@ def func(text):
 
 
 def tostring(text):
-    return list(map(func,text))
+    return list(map(func, text))
 
 
 class player_signal:
-    def __init__(self, ADDRESS="127.0.0.1", HOST="", send_log=False, recieve_log=False, analysis_log=("unknown",
-                                                                                                      "init", "error")):
+    def __init__(self, ADDRESS="127.0.0.1", HOST="", SERVER_PORT=6000, send_log=False, recieve_log=False,
+                 analysis_log=("unknown","init", "error")):
         self.ADDRESS = ADDRESS
         self.s = socket(AF_INET, SOCK_DGRAM)
         ok = 0
@@ -34,13 +34,16 @@ class player_signal:
         self.send_log = send_log
         self.analysis_log = analysis_log
         self.no = ""
+        self.SERVER_PORT = SERVER_PORT
         self.player_port = 0
         self.error = {"no more player or goalie or illegal client version": 0, "unknown command": 1}
 
     def __del__(self):
         self.s.close()
 
-    def send_msg(self, text, PORT=6000, log=None):
+    def send_msg(self, text, PORT=None, log=None):
+        if PORT is None:
+            PORT = self.SERVER_PORT
         self.s.sendto((text + "\0").encode(), (self.ADDRESS, PORT))
         self.send_logging(text, PORT, log=log)
 
@@ -82,15 +85,28 @@ class player_signal:
 
     def recieve_msg(self, log=None):
         msg, address = self.s.recvfrom(8192)
-        if log is None:
-            log = self.recieve_log
-        if log:
-            print("\033[38;5;12m[INFO]" + (
-                    "\033[38;5;13mno \033[4m" + self.no + "\033[0m ") * (
-                          self.no != "") + "\t\033[0m\033[38;5;10mGet msg.\t\033[38;5;9mPORT \033[4m" + str(
-                self.recieve_port) + "\033[0m\033[38;5;9m ← \033[4m" +
-                  str(address[1]) + "\033[0m\t\033[38;5;6mIP \033[4m" + address[0] + "\033[0m")
-        return tostring(loads(msg[:-1].decode("utf-8"))), address
+        msg = tostring(loads(msg[:-1].decode("utf-8")))
+        if msg[0] == "think":
+            if log is None:
+                log = self.recieve_log
+            if log:
+                print("\033[38;5;12m[INFO]" + (
+                        "\033[38;5;13mno \033[4m" + self.no + "\033[0m ") * (
+                              self.no != "") + "\t\033[0m\033[38;5;10mGet \033[4mthink\033[0m msg.\t\033[38;5;9mPORT "
+                                               "\033[4m" + str(self.recieve_port) + "\033[0m\033[38;5;9m ← \033[4m" +
+                      str(address[1]) + "\033[0m\t\033[38;5;6mIP \033[4m" + address[0] + "\033[0m")
+            self.send_msg("(done)",self.player_port)
+            return self.recieve_msg(log)
+        else:
+            if log is None:
+                log = self.recieve_log
+            if log:
+                print("\033[38;5;12m[INFO]" + (
+                        "\033[38;5;13mno \033[4m" + self.no + "\033[0m ") * (
+                              self.no != "") + "\t\033[0m\033[38;5;10mGet msg.\t\033[38;5;9mPORT \033[4m" + str(
+                    self.recieve_port) + "\033[0m\033[38;5;9m ← \033[4m" +
+                      str(address[1]) + "\033[0m\t\033[38;5;6mIP \033[4m" + address[0] + "\033[0m")
+            return msg, address
 
     def msg_analysis(self, text, log_show=None):
         text = text[0]
@@ -122,7 +138,7 @@ class player_signal:
         elif text[0] == "hear":
             log = "\033[38;5;12m[INFO]" + (
                     "\033[38;5;13mno \033[4m" + self.no + "\033[0m ") * (
-                          self.no != "") + "\t\033[38;5;10mhear msg. \033[38;5;9mtime \033[4m" + text[1] + "\033[0m " + \
+                          self.no != "") + "\t\033[38;5;10mhear msg. \033[38;5;9mtime \033[4m" + text[1] + "\033[0m " +\
                   "\033[38;5;6mspeaker \033[4m" + text[2] + "\033[0m " + "\033[38;5;13mcontents \033[4m" + text[3] + \
                   "\033[0m"
             r = {"type": "hear", "time": int(text[1]), "speaker": text[2], "contents": text[3]}
